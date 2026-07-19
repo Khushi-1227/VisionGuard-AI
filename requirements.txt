@@ -1,9 +1,9 @@
 streamlit
-tensorflow
-numpy
-pillow
-opencv-python
-groq
-python-dotenv
 pandas
 plotly
+numpy
+tensorflow
+opencv-python-headless
+Pillow
+groq
+python-dotenv
