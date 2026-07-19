@@ -137,7 +137,7 @@ st.markdown(
 
     .result-card {
         background: white;
-
+        color: #1e293b;
         padding: 25px;
 
         border-radius: 20px;
@@ -183,9 +183,9 @@ st.markdown(
         );
     }
 
-    section[data-testid="stSidebar"] * {
-        color: white;
-    }
+    # section[data-testid="stSidebar"] * {
+    #     color: white;
+    # }
 
     section[data-testid="stSidebar"] button {
 
@@ -209,6 +209,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 
 # =========================================================
