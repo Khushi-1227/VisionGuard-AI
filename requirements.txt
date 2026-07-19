@@ -2,8 +2,8 @@ streamlit
 pandas
 plotly
 numpy
-tensorflow
+tensorflow==2.20.0
 opencv-python-headless
-Pillow
+pillow
 groq
 python-dotenv
