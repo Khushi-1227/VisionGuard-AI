@@ -7,3 +7,7 @@ opencv-python-headless
 pillow
 groq
 python-dotenv
+streamlit-js-eval
+geopy
+streamlit>=1.38
+streamlit>=1.40

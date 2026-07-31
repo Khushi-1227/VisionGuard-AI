@@ -1,20 +1,44 @@
 import os
 import json
+
 from dotenv import load_dotenv
 from groq import Groq
 
 
+# =========================================================
+# LOAD ENVIRONMENT VARIABLES
+# =========================================================
+
 load_dotenv()
 
+
+# =========================================================
+# GROQ CLIENT
+# =========================================================
 
 client = Groq(
     api_key=os.getenv("GROQ_API_KEY")
 )
 
+
+# =========================================================
+# AI INSPECTION REPORT
+# =========================================================
+
 def generate_ai_report(
+
     image,
+
     prediction,
-    confidence
+
+    confidence,
+
+    location="Unknown",
+
+    latitude=0.0,
+
+    longitude=0.0
+
 ):
 
     prompt = f"""
@@ -28,6 +52,17 @@ CNN Prediction:
 
 CNN Confidence:
 {confidence * 100:.2f}%
+
+
+Inspection Location:
+{location}
+
+GPS Latitude:
+{latitude}
+
+GPS Longitude:
+{longitude}
+
 
 Generate a professional infrastructure inspection assessment.
 
@@ -51,20 +86,35 @@ Use exactly this format:
         "Measure 2",
         "Measure 3"
     ],
-    "inspector_remarks": "Professional inspector remarks"
+    "inspector_remarks": "Professional inspector remarks",
+    "estimated_repair_cost": "$500 - $1,500",
+    "estimated_repair_duration": "2-4 Days",
+    "required_workforce": "3-5 Workers"
 }}
+
 
 Rules:
 
 - risk_score must be an integer from 0 to 100.
+
 - severity must be one of:
   Critical, High, Moderate, Low.
+
 - repair_priority must be one of:
   Immediate, Urgent, Scheduled, Routine.
+
 - Do not invent exact location.
+
 - Do not invent road name.
+
 - Do not invent exact measurements.
+
 - The assessment must be based on the CNN prediction.
+
+- Use the provided GPS/location information only as inspection metadata.
+
+- Do not make risk decisions solely based on location.
+
 - This is an AI-assisted assessment.
 """
 
@@ -78,8 +128,11 @@ Rules:
             messages=[
 
                 {
+
                     "role": "user",
+
                     "content": prompt
+
                 }
 
             ],
@@ -93,22 +146,48 @@ Rules:
 
         result = response.choices[0].message.content
 
-        result = result.replace(
-            "```json",
-            ""
-        )
 
         result = result.replace(
-            "```",
+
+            "```json",
+
             ""
+
         )
+
+
+        result = result.replace(
+
+            "```",
+
+            ""
+
+        )
+
 
         result = result.strip()
 
 
-        return json.loads(
+        parsed_result = json.loads(
             result
         )
+
+        parsed_result.setdefault(
+            "estimated_repair_cost",
+            "Not available"
+        )
+
+        parsed_result.setdefault(
+            "estimated_repair_duration",
+            "Not available"
+        )
+
+        parsed_result.setdefault(
+            "required_workforce",
+            "Not available"
+        )
+
+        return parsed_result
 
 
     except Exception as e:
@@ -122,16 +201,25 @@ Rules:
             "repair_priority": "Routine",
 
             "public_safety_risk":
+
             "AI assessment unavailable.",
 
             "possible_causes": [],
 
             "recommended_action":
+
             "Manual inspection required.",
 
             "preventive_measures": [],
 
             "inspector_remarks":
-            f"AI Error: {str(e)}"
+
+            f"AI Error: {str(e)}",
+
+            "estimated_repair_cost": "Not available",
+
+            "estimated_repair_duration": "Not available",
+
+            "required_workforce": "Not available"
 
         }
