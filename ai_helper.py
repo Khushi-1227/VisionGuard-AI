@@ -121,61 +121,56 @@ Rules:
 
     try:
 
-        response = client.chat.completions.create(
+    response = client.chat.completions.create(
 
-    model="openai/gpt-oss-120b",
+        model="openai/gpt-oss-120b",
 
-    messages=[
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
 
-        {
-            "role": "user",
-            "content": prompt
-        }
+        temperature=0.2,
 
-    ],
+        max_tokens=1200
+    )
 
-    temperature=0.2,
+    result = response.choices[0].message.content
 
-    max_tokens=1200
+    result = result.replace(
+        "```json",
+        ""
+    )
 
-)
+    result = result.replace(
+        "```",
+        ""
+    )
 
-result = response.choices[0].message.content
+    result = result.strip()
 
-result = result.replace(
-    "```json",
-    ""
-)
+    parsed_result = json.loads(
+        result
+    )
 
-result = result.replace(
-    "```",
-    ""
-)
+    parsed_result.setdefault(
+        "estimated_repair_cost",
+        "Not available"
+    )
 
-        result = result.strip()
+    parsed_result.setdefault(
+        "estimated_repair_duration",
+        "Not available"
+    )
 
+    parsed_result.setdefault(
+        "required_workforce",
+        "Not available"
+    )
 
-        parsed_result = json.loads(
-            result
-        )
-
-        parsed_result.setdefault(
-            "estimated_repair_cost",
-            "Not available"
-        )
-
-        parsed_result.setdefault(
-            "estimated_repair_duration",
-            "Not available"
-        )
-
-        parsed_result.setdefault(
-            "required_workforce",
-            "Not available"
-        )
-
-        return parsed_result
-
+    return parsed_result
 
     except Exception as e:
 
