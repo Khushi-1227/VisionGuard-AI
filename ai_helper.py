@@ -123,47 +123,34 @@ Rules:
 
         response = client.chat.completions.create(
 
-            model="openai/gpt-oss-120b",
+    model="openai/gpt-oss-120b",
 
-            messages=[
+    messages=[
 
-                {
+        {
+            "role": "user",
+            "content": prompt
+        }
 
-                    "role": "user",
+    ],
 
-                    "content": prompt
+    temperature=0.2,
 
-                }
+    max_tokens=1200
 
-            ],
+)
 
-            temperature=0.2,
+result = response.choices[0].message.content
 
-            max_tokens=1200
+result = result.replace(
+    "```json",
+    ""
+)
 
-        )
-
-
-        result = response.choices[0].message.content
-
-
-        result = result.replace(
-
-            "```json",
-
-            ""
-
-        )
-
-
-        result = result.replace(
-
-            "```",
-
-            ""
-
-        )
-
+result = result.replace(
+    "```",
+    ""
+)
 
         result = result.strip()
 
