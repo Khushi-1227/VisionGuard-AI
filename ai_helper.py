@@ -26,23 +26,15 @@ client = Groq(
 # =========================================================
 
 def generate_ai_report(
-
     image,
-
     prediction,
-
     confidence,
-
     location="Unknown",
-
     latitude=0.0,
-
     longitude=0.0
-
 ):
 
     prompt = f"""
-
 You are a Civil Infrastructure Inspection AI.
 
 A CNN deep learning model analyzed a road image.
@@ -53,7 +45,6 @@ CNN Prediction:
 CNN Confidence:
 {confidence * 100:.2f}%
 
-
 Inspection Location:
 {location}
 
@@ -62,7 +53,6 @@ GPS Latitude:
 
 GPS Longitude:
 {longitude}
-
 
 Generate a professional infrastructure inspection assessment.
 
@@ -92,7 +82,6 @@ Use exactly this format:
     "required_workforce": "3-5 Workers"
 }}
 
-
 Rules:
 
 - risk_score must be an integer from 0 to 100.
@@ -116,92 +105,139 @@ Rules:
 - Do not make risk decisions solely based on location.
 
 - This is an AI-assisted assessment.
-"""
 
+- Return ONLY JSON.
+"""
 
     try:
 
-    response = client.chat.completions.create(
+        response = client.chat.completions.create(
 
-        model="openai/gpt-oss-120b",
+            model="openai/gpt-oss-120b",
 
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
 
-        temperature=0.2,
+            temperature=0.2,
 
-        max_tokens=1200
-    )
+            max_tokens=1200
+        )
 
-    result = response.choices[0].message.content
+        result = response.choices[0].message.content
 
-    result = result.replace(
-        "```json",
-        ""
-    )
+        # Remove markdown code fences if the model adds them
+        result = result.replace(
+            "```json",
+            ""
+        )
 
-    result = result.replace(
-        "```",
-        ""
-    )
+        result = result.replace(
+            "```",
+            ""
+        )
 
-    result = result.strip()
+        result = result.strip()
 
-    parsed_result = json.loads(
-        result
-    )
+        # Convert JSON string into Python dictionary
+        parsed_result = json.loads(result)
 
-    parsed_result.setdefault(
-        "estimated_repair_cost",
-        "Not available"
-    )
+        # Add default values if fields are missing
+        parsed_result.setdefault(
+            "severity",
+            "Unknown"
+        )
 
-    parsed_result.setdefault(
-        "estimated_repair_duration",
-        "Not available"
-    )
+        parsed_result.setdefault(
+            "risk_score",
+            0
+        )
 
-    parsed_result.setdefault(
-        "required_workforce",
-        "Not available"
-    )
+        parsed_result.setdefault(
+            "repair_priority",
+            "Routine"
+        )
 
-    return parsed_result
+        parsed_result.setdefault(
+            "public_safety_risk",
+            "Not available"
+        )
+
+        parsed_result.setdefault(
+            "possible_causes",
+            []
+        )
+
+        parsed_result.setdefault(
+            "recommended_action",
+            "Manual inspection required."
+        )
+
+        parsed_result.setdefault(
+            "preventive_measures",
+            []
+        )
+
+        parsed_result.setdefault(
+            "inspector_remarks",
+            "AI-assisted assessment generated."
+        )
+
+        parsed_result.setdefault(
+            "estimated_repair_cost",
+            "Not available"
+        )
+
+        parsed_result.setdefault(
+            "estimated_repair_duration",
+            "Not available"
+        )
+
+        parsed_result.setdefault(
+            "required_workforce",
+            "Not available"
+        )
+
+        return parsed_result
 
     except Exception as e:
 
         return {
 
-            "severity": "Unknown",
+            "severity":
+            "Unknown",
 
-            "risk_score": 0,
+            "risk_score":
+            0,
 
-            "repair_priority": "Routine",
+            "repair_priority":
+            "Routine",
 
             "public_safety_risk":
-
             "AI assessment unavailable.",
 
-            "possible_causes": [],
+            "possible_causes":
+            [],
 
             "recommended_action":
-
             "Manual inspection required.",
 
-            "preventive_measures": [],
+            "preventive_measures":
+            [],
 
             "inspector_remarks":
-
             f"AI Error: {str(e)}",
 
-            "estimated_repair_cost": "Not available",
+            "estimated_repair_cost":
+            "Not available",
 
-            "estimated_repair_duration": "Not available",
+            "estimated_repair_duration":
+            "Not available",
 
-            "required_workforce": "Not available"
+            "required_workforce":
+            "Not available"
 
         }
