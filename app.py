@@ -4104,74 +4104,146 @@ elif st.session_state.page == "Public Map":
         "open to everyone for transparency."
     )
 
-    conn = sqlite3.connect(
-        DB_NAME
-    )
+    # -----------------------------------------------------
+    # CONNECT TO DATABASE
+    # -----------------------------------------------------
+
+    conn = sqlite3.connect(DB_NAME)
 
     map_df = pd.read_sql_query(
-
         """
-
         SELECT
-
             inspection_id,
-
             prediction,
-
             severity,
-
             risk_score,
-
             status,
-
             assigned_municipality,
-
             latitude,
-
             longitude
-
         FROM inspections
-
-        WHERE latitude != 0 AND longitude != 0
-
+        WHERE latitude IS NOT NULL
+          AND longitude IS NOT NULL
+          AND latitude != 0
+          AND longitude != 0
         """,
-
         conn
-
     )
 
     conn.close()
 
+    # -----------------------------------------------------
+    # CLEAN LOCATION DATA
+    # -----------------------------------------------------
+
+    if not map_df.empty:
+
+        map_df["latitude"] = pd.to_numeric(
+            map_df["latitude"],
+            errors="coerce"
+        )
+
+        map_df["longitude"] = pd.to_numeric(
+            map_df["longitude"],
+            errors="coerce"
+        )
+
+        map_df["risk_score"] = pd.to_numeric(
+            map_df["risk_score"],
+            errors="coerce"
+        )
+
+        # Remove invalid coordinates
+        map_df = map_df.dropna(
+            subset=["latitude", "longitude"]
+        )
+
+        # Keep only valid geographical coordinates
+        map_df = map_df[
+            (map_df["latitude"].between(-90, 90)) &
+            (map_df["longitude"].between(-180, 180))
+        ]
+
+        # Prevent zero/negative marker size
+        map_df["risk_score"] = map_df["risk_score"].fillna(1)
+
+        map_df["risk_score"] = map_df["risk_score"].clip(
+            lower=1
+        )
+
+    # -----------------------------------------------------
+    # DEBUG INFORMATION
+    # -----------------------------------------------------
+
+    st.write(
+        "📍 Locations available:",
+        len(map_df)
+    )
+
+    # -----------------------------------------------------
+    # MAP
+    # -----------------------------------------------------
+
     if map_df.empty:
 
+        st.warning(
+            "⚠️ No valid complaint location data is available."
+        )
+
         st.info(
-            "No complaints with location data yet."
+            "Complaints must contain valid latitude and longitude "
+            "values before they can appear on the public map."
         )
 
     else:
 
+        # Center map automatically around complaint locations
+        center_lat = map_df["latitude"].mean()
+        center_lon = map_df["longitude"].mean()
+
         map_fig = px.scatter_map(
-        map_df,
-        lat="latitude",
-        lon="longitude",
-        color="severity",
-        size="risk_score",
-        hover_name="inspection_id",
-        hover_data=[
-          "prediction",
-          "status",
-          "assigned_municipality"
-    ],
-        zoom=10,
-        height=560,
-        map_style="open-street-map"
-)
+            map_df,
+            lat="latitude",
+            lon="longitude",
+            color="severity",
+            size="risk_score",
+            hover_name="inspection_id",
+            hover_data=[
+                "prediction",
+                "status",
+                "assigned_municipality",
+                "latitude",
+                "longitude"
+            ],
+            zoom=10,
+            height=560,
+            map_style="open-street-map"
+        )
+
+        map_fig.update_layout(
+            map={
+                "center": {
+                    "lat": center_lat,
+                    "lon": center_lon
+                },
+                "zoom": 10
+            },
+            margin={
+                "r": 0,
+                "t": 0,
+                "l": 0,
+                "b": 0
+            }
+        )
 
         st.plotly_chart(
-        map_fig,
-        width="stretch"
-)
-        
+            map_fig,
+            width="stretch"
+        )
+
+        # -------------------------------------------------
+        # MAP STATISTICS
+        # -------------------------------------------------
 
         m1, m2, m3 = st.columns(3)
 
@@ -4183,18 +4255,20 @@ elif st.session_state.page == "Public Map":
         m2.metric(
             "Resolved",
             len(
-                map_df[map_df["status"] == "Resolved"]
+                map_df[
+                    map_df["status"] == "Resolved"
+                ]
             )
         )
 
         m3.metric(
             "Open Issues",
             len(
-                map_df[map_df["status"] != "Resolved"]
+                map_df[
+                    map_df["status"] != "Resolved"
+                ]
             )
         )
-
-
 # =========================================================
 # AI ASSISTANT (CHATBOT)
 # =========================================================
