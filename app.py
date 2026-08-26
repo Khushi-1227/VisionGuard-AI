@@ -4174,7 +4174,7 @@ elif st.session_state.page == "Public Map":
 
             height=560,
 
-            map_style="open-street-map"
+            # map_style="open-street-map"
 
         )
 
