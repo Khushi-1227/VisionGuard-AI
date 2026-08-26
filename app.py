@@ -4150,7 +4150,7 @@ elif st.session_state.page == "Public Map":
 
     else:
 
-        map_fig = px.scatter_mapbox(
+        map_fig = px.scatter_map(
 
             map_df,
 
@@ -4174,7 +4174,7 @@ elif st.session_state.page == "Public Map":
 
             height=560,
 
-            mapbox_style="open-street-map"
+            map_style="open-street-map"
 
         )
 
@@ -4182,7 +4182,7 @@ elif st.session_state.page == "Public Map":
 
             map_fig,
 
-            use_container_width=True
+            width="stretch"
 
         )
 
