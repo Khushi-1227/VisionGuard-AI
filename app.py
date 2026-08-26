@@ -4151,25 +4151,25 @@ elif st.session_state.page == "Public Map":
     else:
 
         map_fig = px.scatter_map(
-    map_df,
-    lat="latitude",
-    lon="longitude",
-    color="severity",
-    size="risk_score",
-    hover_name="inspection_id",
-    hover_data=[
-        "prediction",
-        "status",
-        "assigned_municipality"
+        map_df,
+        lat="latitude",
+        lon="longitude",
+        color="severity",
+        size="risk_score",
+        hover_name="inspection_id",
+        hover_data=[
+          "prediction",
+          "status",
+          "assigned_municipality"
     ],
-    zoom=10,
-    height=560,
-    map_style="open-street-map"
+        zoom=10,
+        height=560,
+        map_style="open-street-map"
 )
 
-st.plotly_chart(
-    map_fig,
-    width="stretch"
+        st.plotly_chart(
+        map_fig,
+        width="stretch"
 )
         
 
