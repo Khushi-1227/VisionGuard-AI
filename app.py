@@ -4174,7 +4174,7 @@ elif st.session_state.page == "Public Map":
 
             height=560,
 
-            map_style="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+            map_style="open-street-map"
 
         )
 
